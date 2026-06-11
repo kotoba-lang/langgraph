@@ -2,7 +2,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             [langgraph.graph :as g]
             [langgraph.checkpoint :as cp]
-            [langgraph.db :as db]))
+            [langchain.db :as db]))
 
 (defn- linear-graph []
   (-> (g/state-graph {:channels {:log {:reducer (fnil into []) :default []}}})

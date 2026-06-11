@@ -7,12 +7,12 @@
   Anthropic adapter on a JVM host (the library itself does no I/O —
   http/json are injected host capabilities)."
   (:require [langgraph.prebuilt :as prebuilt]
-            [langgraph.model :as model]
-            [langgraph.message :as msg]
+            [langchain.model :as model]
+            [langchain.message :as msg]
             [langgraph.graph :as g]
             [langgraph.checkpoint :as cp]
-            [langgraph.memory :as memory]
-            [langgraph.db :as db]
+            [langchain.memory :as memory]
+            [langchain.db :as db]
             [langgraph.viz :as viz]))
 
 (def weather-tool

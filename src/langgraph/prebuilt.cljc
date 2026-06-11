@@ -1,9 +1,9 @@
 (ns langgraph.prebuilt
   "Prebuilt graphs — the classic ReAct tool-calling agent."
   (:require [langgraph.graph :as g]
-            [langgraph.model :as model]
-            [langgraph.message :as msg]
-            [langgraph.tool :as tool]))
+            [langchain.model :as model]
+            [langchain.message :as msg]
+            [langchain.tool :as tool]))
 
 (defn create-react-agent
   "Tool-calling agent loop:

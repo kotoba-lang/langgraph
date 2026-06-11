@@ -1,20 +1,18 @@
 # langgraph-clj
 
-LangGraph / LangChain-style LLM orchestration in **portable Clojure** —
-zero dependencies, every namespace is `.cljc`, designed to run on
-**Clojure-on-WASM hosts** (SCI, ClojureScript, GraalVM) as well as the
-JVM, with all state persisted through a **Datomic API**.
+LangGraph-style graph orchestration in **portable Clojure** — every
+namespace is `.cljc`, designed to run on **Clojure-on-WASM hosts**
+(SCI, ClojureScript, GraalVM, kotoba-clj) as well as the JVM, with all
+state persisted through a **Datomic API**.
+
+Built on [langchain-clj](https://github.com/com-junkawasaki/langchain-clj)
+(Runnables/LCEL, messages, prompts, models, tools, memory, and the
+Datomic-compatible store) — the same layering as upstream
+langchain-core / langgraph. langchain-clj is the only dependency, and
+it is itself zero-dep.
 
 ```
 src/langgraph/
-  db.cljc          Datomic-API-compatible EAV store + Datalog + pull (swappable)
-  runnable.cljc    LCEL Runnables: pipe / parallel / branch / retry / fallbacks
-  message.cljc     chat message data model (Anthropic-shaped maps)
-  prompt.cljc      {var} templates, chat templates, placeholders
-  model.cljc       ChatModel protocol, mock model, Anthropic adapter (I/O injected)
-  tool.cljc        tool definitions + execution + wire-format conversion
-  parser.cljc      str / edn / json output parsers
-  memory.cljc      chat history as datoms
   graph.cljc       StateGraph + Pregel superstep loop + interrupts
   checkpoint.cljc  checkpointers (in-memory / Datomic) — resume & time travel
   prebuilt.cljc    create-react-agent
@@ -23,25 +21,27 @@ src/langgraph/
 
 ## Design
 
-- **WASM premise** — no JVM interop, no threads, no wall clock. The
-  library does no I/O: HTTP and JSON are *injected host capabilities*
-  (fetch on a WASM host, any client on the JVM).
-- **Datomic API premise** — checkpoints and chat history are datoms.
-  A minimal Datomic-compatible store (datalog `q`, `pull`, upsert,
-  cardinality-many, lookup refs, `as-of`) is bundled; real Datomic
-  Local or DataScript drops in via the `langgraph.db/api` function map.
-  Graph execution history becomes a queryable fact log — time travel,
-  audits, and cross-thread views are Datalog queries (ADR-0010 pattern).
+- **WASM premise** — no JVM interop, no threads, no wall clock. No
+  I/O in the library: HTTP and JSON are *injected host capabilities*
+  (see langchain-clj's `anthropic-model`).
+- **Datomic API premise** — checkpoints are datoms. Graph execution
+  history becomes a queryable fact log — resume, human-in-the-loop,
+  time travel, and audits are Datalog queries (ADR-0010 pattern).
+  Real Datomic Local or DataScript drops in via the
+  `langchain.db/api` function map.
 
 ## Quickstart
 
 ```clojure
+;; deps.edn
+;; {:deps {io.github.com-junkawasaki/langgraph-clj {:git/tag "v0.2.0" :git/sha "…"}}}
+
 (require '[langgraph.graph :as g]
          '[langgraph.prebuilt :as prebuilt]
-         '[langgraph.model :as model]
-         '[langgraph.message :as msg]
          '[langgraph.checkpoint :as cp]
-         '[langgraph.db :as db])
+         '[langchain.model :as model]
+         '[langchain.message :as msg]
+         '[langchain.db :as db])
 
 ;; --- a graph with reducer channels, conditional edges, interrupts ---
 (def graph
@@ -78,36 +78,31 @@ src/langgraph/
 (g/invoke agent {:messages [(msg/user "Weather in Paris?")]})
 ```
 
-Everything is a Runnable — plain fns, keywords, and maps compose
-directly:
+Checkpoints are plain datoms, so execution history is queryable:
 
 ```clojure
-(require '[langgraph.runnable :as r] '[langgraph.prompt :as p])
-
-(r/invoke (r/pipe (p/template "Translate to French: {text}")
-                  (model/as-runnable claude)
-                  msg/text)
-          {:text "hello"})
-```
-
-Chat history and checkpoints are plain datoms, so views are queries:
-
-```clojure
-(db/q '[:find ?thread (count ?m)
-        :where [?t :thread/id ?thread] [?m :msg/thread ?t]]
+(db/q '[:find ?thread (max ?step)
+        :where [?c :checkpoint/thread ?thread]
+               [?c :checkpoint/step ?step]]
       (db/db conn))
 ```
 
 ## Mapping from upstream
 
 See [docs/adr/0001-architecture.md](docs/adr/0001-architecture.md) for
-the full LangGraph/LangChain → langgraph-clj correspondence table and
-the rationale for the zero-dependency / injected-I/O design.
+the full LangGraph → langgraph-clj correspondence table and the
+injected-I/O rationale. The LangChain layer lives in
+[langchain-clj](https://github.com/com-junkawasaki/langchain-clj).
 
 ## Tests / example
 
 ```sh
-clojure -M:test                                  # 21 tests, 78 assertions
-clojure -Sdeps '{:paths ["src" "examples"]}' \
+clojure -M:test     # 9 tests, 24 assertions (graph / checkpoint / agent layer)
+clojure -Sdeps '{:paths ["src" "examples"]
+                 :deps {io.github.com-junkawasaki/langchain-clj
+                        {:git/tag "v0.1.0" :git/sha "ae475c9"}}}' \
         -M -e "(require 'react-agent) (react-agent/-main)"
 ```
+
+Workspace development against a local langchain-clj checkout:
+`clojure -M:dev:test`.

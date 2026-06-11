@@ -8,7 +8,7 @@
   of the data model: each step is an entity, `get-state-at` is a query."
   (:require #?(:clj [clojure.edn :as edn]
                :cljs [cljs.reader :as edn])
-            [langgraph.db :as db]))
+            [langchain.db :as db]))
 
 (defprotocol Checkpointer
   (-put! [cp thread-id checkpoint]
@@ -48,8 +48,8 @@
 
 (defn datomic-checkpointer
   "Checkpointer over a Datomic-API connection. `db-api` defaults to the
-  built-in langgraph.db; pass a Datomic/DataScript-shaped map to swap
-  the backend (see langgraph.db/api docstring)."
+  built-in langchain.db; pass a Datomic/DataScript-shaped map to swap
+  the backend (see langchain.db/api docstring)."
   ([conn] (datomic-checkpointer conn {}))
   ([conn {:keys [db-api] :or {db-api db/api}}]
    (let [{:keys [q transact! db pull]} db-api
