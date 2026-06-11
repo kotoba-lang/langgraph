@@ -17,10 +17,13 @@ LangGraph 相当のエージェントオーケストレーションを、
 ### 1. 本家と同じ積層: langchain-clj の上に langgraph-clj
 
 ```
-langgraph-clj  (graph / checkpoint / prebuilt / viz)        ← このリポジトリ
-      │  :deps io.github.com-junkawasaki/langchain-clj {:git/tag …}
-      ▼
-langchain-clj  (runnable / message / prompt / model / tool / parser / memory / db)
+browser-use-clj      computer-use-clj          ← エージェント層 (このリポジトリに git 依存)
+        └────────┬────────┘
+          langgraph-clj          comfyui-clj   ← このリポジトリ (オーケストレーション層)
+   (graph/checkpoint/prebuilt/viz)
+                └───────┬───────────┘
+                  langchain-clj                ← 基盤層
+  (runnable / message / prompt / model / tool / parser / memory / db)
 ```
 
 v0.1 で同居していた LangChain 層(`langgraph.{runnable,message,prompt,
