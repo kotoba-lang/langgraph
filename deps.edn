@@ -1,14 +1,14 @@
 {:paths ["src"]
  ;; Only dependency is langchain-clj (itself zero-dep, all .cljc) —
  ;; the same layering as upstream langchain-core / langgraph (ADR-0001).
- :deps {io.github.com-junkawasaki/langchain-clj
-        {:git/tag "v0.1.1" :git/sha "044ecb2"}}
+ :deps {io.github.kotoba-lang/langchain
+        {:git/sha "909e18467968a51082550b95a360123454160ca5"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
          :main-opts ["-m" "cognitect.test-runner"]
          :exec-fn cognitect.test-runner.api/test}
-  ;; local checkout for workspace development (orgs/com-junkawasaki/*)
-  :dev {:override-deps {io.github.com-junkawasaki/langchain-clj
-                        {:local/root "../langchain-clj"}}}}}
+  ;; local checkout for workspace development (orgs/kotoba-lang/*)
+  :dev {:override-deps {io.github.kotoba-lang/langchain
+                        {:local/root "../langchain"}}}}}
