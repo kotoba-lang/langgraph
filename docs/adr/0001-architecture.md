@@ -28,7 +28,7 @@ browser-use-clj      computer-use-clj          ← エージェント層 (この
 
 v0.1 で同居していた LangChain 層(`langgraph.{runnable,message,prompt,
 model,tool,parser,memory,db}`)は v0.2 で
-[langchain-clj](https://github.com/com-junkawasaki/langchain-clj)
+[langchain-clj](https://github.com/kotoba-lang/langchain)
 (`langchain.*`)へ切り出した。依存は langchain-clj のみ(それ自体は依存ゼロ)。
 
 ### 2. 全コード .cljc・ホスト能力は注入

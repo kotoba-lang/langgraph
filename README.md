@@ -1,14 +1,14 @@
-# langgraph-clj
+# langgraph
 
 LangGraph-style graph orchestration in **portable Clojure** — every
 namespace is `.cljc`, designed to run on **Clojure-on-WASM hosts**
 (SCI, ClojureScript, GraalVM, kotoba-clj) as well as the JVM, with all
 state persisted through a **Datomic API**.
 
-Built on [langchain-clj](https://github.com/com-junkawasaki/langchain-clj)
+Built on [langchain](https://github.com/kotoba-lang/langchain)
 (Runnables/LCEL, messages, prompts, models, tools, memory, and the
 Datomic-compatible store) — the same layering as upstream
-langchain-core / langgraph. langchain-clj is the only dependency, and
+langchain-core / langgraph. langchain is the only dependency, and
 it is itself zero-dep.
 
 ```
@@ -23,7 +23,7 @@ src/langgraph/
 
 - **WASM premise** — no JVM interop, no threads, no wall clock. No
   I/O in the library: HTTP and JSON are *injected host capabilities*
-  (see langchain-clj's `anthropic-model`).
+  (see langchain's `anthropic-model`).
 - **Datomic API premise** — checkpoints are datoms. Graph execution
   history becomes a queryable fact log — resume, human-in-the-loop,
   time travel, and audits are Datalog queries (ADR-0010 pattern).
@@ -34,7 +34,7 @@ src/langgraph/
 
 ```clojure
 ;; deps.edn
-;; {:deps {io.github.com-junkawasaki/langgraph-clj {:git/tag "v0.2.0" :git/sha "…"}}}
+;; {:deps {io.github.kotoba-lang/langgraph {:git/tag "v0.2.0" :git/sha "…"}}}
 
 (require '[langgraph.graph :as g]
          '[langgraph.prebuilt :as prebuilt]
@@ -90,19 +90,19 @@ Checkpoints are plain datoms, so execution history is queryable:
 ## Mapping from upstream
 
 See [docs/adr/0001-architecture.md](docs/adr/0001-architecture.md) for
-the full LangGraph → langgraph-clj correspondence table and the
+the full LangGraph → langgraph correspondence table and the
 injected-I/O rationale. The LangChain layer lives in
-[langchain-clj](https://github.com/com-junkawasaki/langchain-clj).
+[langchain](https://github.com/kotoba-lang/langchain).
 
 ## Tests / example
 
 ```sh
 clojure -M:test     # 9 tests, 24 assertions (graph / checkpoint / agent layer)
 clojure -Sdeps '{:paths ["src" "examples"]
-                 :deps {io.github.com-junkawasaki/langchain-clj
+                 :deps {io.github.kotoba-lang/langchain
                         {:git/tag "v0.1.0" :git/sha "ae475c9"}}}' \
         -M -e "(require 'react-agent) (react-agent/-main)"
 ```
 
-Workspace development against a local langchain-clj checkout:
+Workspace development against a local langchain checkout:
 `clojure -M:dev:test`.
