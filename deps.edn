@@ -2,7 +2,7 @@
  ;; Only dependency is langchain-clj (itself zero-dep, all .cljc) —
  ;; the same layering as upstream langchain-core / langgraph (ADR-0001).
  :deps {io.github.kotoba-lang/langchain
-        {:git/tag "v0.1.1" :git/sha "044ecb2"}}
+        {:git/sha "909e18467968a51082550b95a360123454160ca5"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
