@@ -29,6 +29,10 @@ src/langgraph/
   time travel, and audits are Datalog queries (ADR-0010 pattern).
   Real Datomic Local or DataScript drops in via the
   `langchain.db/api` function map.
+- **Durable loop boundary** — long-running agents are modeled as a host
+  supervisor repeatedly running bounded StateGraph ticks. The host owns
+  leases, sleep/cadence, crash recovery, budgets, and worker lifecycle;
+  the graph owns one auditable step with checkpoint/interrupt support.
 
 ## Quickstart
 

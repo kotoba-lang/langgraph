@@ -45,6 +45,21 @@ resume / human-in-the-loop / time travel は Datalog クエリで落ちてくる
 ストアは `langchain.db`(Datomic 互換ミニ実装)で、本物の Datomic Local /
 DataScript は `langchain.db/api` と同シェイプの関数マップで差し替え。
 
+### 3.1 長期耐久 loop は外側 supervisor の責務
+
+`langgraph-clj` の graph 実行は有界である。Claude Code 型の長時間 agent を作る
+場合でも、graph 内に無期限 loop / sleep / worker 管理を入れない。代わりに
+host/kotoba code runtime が durable outer loop を持つ:
+
+1. lease を取得する
+2. 最新 checkpoint と loop budget を読む
+3. `run*` を `:recursion-limit` 付きで 1 tick 実行する
+4. checkpoint / event / budget / governor decision を datom に保存する
+5. continue / sleep / interrupt / stop を決める
+
+この分離により、`.cljc` の portability と Datalog replayability を保ったまま、
+プロセス再起動・stale lease 回収・長期予算管理を実現する。
+
 ### 4. LangGraph との対応
 
 | upstream (langgraph) | langgraph-clj |
@@ -92,6 +107,7 @@ Datomic 属性 `:kg/claim/thread` / `:kg/claim/step` / `:kg/claim/state` /
 - Send API / subgraph(次版候補)
 - 真の並列 superstep・トークン単位ストリーミング(チャンク列としての `stream` のみ)
 - Datalog rules (%)・`d/history`(必要なら本物の Datomic を差す)
+- host 側 durable supervisor 本体(lease / sleep / worker lifecycle / process restart)
 
 ## 帰結
 
