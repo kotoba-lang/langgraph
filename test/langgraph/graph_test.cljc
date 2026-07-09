@@ -71,6 +71,82 @@
         (is (= :done (:status r2)))
         (is (= [:draft :human-approved :send] (:log (:state r2))))))))
 
+#?(:clj
+   (deftest claim-resume!-under-real-thread-contention-only-one-winner
+     (testing "the core atomic-claim primitive itself, isolated from run*'s
+               broader semantics (re-invoking an already-:done thread for a
+               new tick is legitimate, separate behavior -- NOT what's
+               under test here): N threads all racing to claim-resume! the
+               SAME :interrupted checkpoint must have EXACTLY ONE winner"
+       (let [cpr (cp/mem-checkpointer)
+             _ (cp/put! cpr "t" {:step 0 :state {} :frontier [:send] :status :interrupted})
+             expected (cp/get-latest cpr "t")
+             n 20
+             wins (atom 0)
+             threads (mapv (fn [_]
+                             (Thread. (fn []
+                                       (when (cp/claim-resume! cpr "t" expected)
+                                         (swap! wins inc)))))
+                          (range n))]
+         (run! #(.start ^Thread %) threads)
+         (run! #(.join ^Thread %) threads)
+         (is (= 1 @wins) "exactly one of N concurrent claims on the identical checkpoint must win")))))
+
+#?(:clj
+   (deftest concurrent-resume-does-not-run-the-gated-node-twice
+     (testing "interrupt-before is langgraph's entire human-in-the-loop
+               safety gate -- without an atomic claim, two callers racing
+               to resume the SAME :interrupted checkpoint (a retry, a
+               double-click, a racing worker -- realistic, not contrived)
+               could both run the gated node. Forces genuine simultaneity
+               with a CountDownLatch (both threads block until released
+               together) so this isolates the SAME-checkpoint race
+               specifically, not the separate/legitimate case of a caller
+               observing an ALREADY-:done thread and starting a fresh new
+               tick (that's expected re-invocation behavior, not a bug).
+
+               Two DIFFERENT legitimate outcome shapes are both correct,
+               depending on exactly how the two threads interleave after
+               release, and this test must accept either: (a) both threads
+               see the SAME :interrupted checkpoint -> one wins the claim
+               (:ok, runs :send), the other loses it cleanly (:claim-lost,
+               throws, does NOT run :send); or (b) the loser's own read
+               happens to land AFTER the winner has already fully finished
+               (a real possibility even with the latch, since .await
+               releasing both threads doesn't guarantee lock-step
+               execution past that point) -- it then sees :done, takes the
+               legitimate fresh-tick path, immediately re-hits :send's own
+               interrupt-before gate, and returns normally (:ok) WITHOUT
+               running :send. Either way :send runs exactly once -- that
+               invariant, not the exact outcome-label pairing, is what's
+               actually under test."
+       (let [runs (atom 0)
+             cpr (cp/mem-checkpointer)
+             cg (-> (g/state-graph {:channels {:log {:reducer (fnil into []) :default []}}})
+                    (g/add-node :draft (fn [_] {:log [:draft]}))
+                    (g/add-node :send (fn [_] (swap! runs inc) {:log [:send]}))
+                    (g/set-entry-point :draft)
+                    (g/add-edge :draft :send)
+                    (g/compile-graph {:checkpointer cpr :interrupt-before #{:send}}))
+             gate (java.util.concurrent.CountDownLatch. 1)
+             outcomes (atom [])
+             run-one (fn []
+                       (.await gate)
+                       (try
+                         (g/run* cg nil {:thread-id "race"})
+                         (swap! outcomes conj :ok)
+                         (catch Exception e
+                           (swap! outcomes conj
+                                  (if (re-find #"Concurrent resume" (ex-message e)) :claim-lost :other-error)))))
+             threads (mapv (fn [_] (Thread. run-one)) (range 2))]
+         (g/run* cg {} {:thread-id "race"}) ;; interrupt before :send
+         (run! #(.start ^Thread %) threads)
+         (.countDown gate) ;; release both threads at once -- genuine simultaneity
+         (run! #(.join ^Thread %) threads)
+         (is (= 1 @runs) ":send must run EXACTLY once between the two SAME-checkpoint racers")
+         (is (not (contains? (set @outcomes) :other-error))
+             (str "no unexpected exception -- outcomes were " @outcomes))))))
+
 (deftest interrupt-and-resume-datomic
   (let [conn (db/create-conn cp/checkpoint-schema)
         cpr (cp/datomic-checkpointer conn)

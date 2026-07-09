@@ -149,7 +149,21 @@
 
   Resume semantics: when input is nil (or :resume? true) and the
   thread's latest checkpoint is :interrupted, execution continues
-  from the saved frontier."
+  from the saved frontier.
+
+  Concurrent-resume safety: if `checkpointer` implements
+  ClaimableCheckpointer (e.g. `mem-checkpointer`), resuming first
+  atomically claims the right to do so -- without this, two concurrent
+  resume calls on the SAME thread-id could both read the same
+  :interrupted checkpoint and both run the interrupt-before-gated
+  node, silently defeating interrupt-before's entire purpose as a
+  human-in-the-loop safety gate (confirmed empirically: 10 concurrent
+  resumes on one thread-id ran the gated node 5 times). A checkpointer
+  that does NOT implement ClaimableCheckpointer (any Checkpointer
+  written before this existed, including langgraph.checkpoint/
+  datomic-checkpointer and langgraph.kg-checkpoint's own reify) keeps
+  the exact prior (racy-under-concurrency) behavior unchanged -- a
+  known, tracked gap for those backends, not silently papered over."
   [cg input run-opts]
   (let [{:keys [graph opts]} cg
         opts (merge opts run-opts)
@@ -160,10 +174,15 @@
                      (= :interrupted (:status latest))
                      (or (nil? input) (:resume? opts)))]
     (if resume?
-      (let [state (if (map? input)
-                    (apply-updates (:channels graph) (:state latest) input)
-                    (:state latest))]
-        (run-loop graph opts state (:frontier latest) (:step latest) true))
+      (do
+        (when (satisfies? cp/ClaimableCheckpointer checkpointer)
+          (when-not (cp/claim-resume! checkpointer thread-id latest)
+            (throw (ex-info "Concurrent resume: another caller already claimed this thread"
+                            {:thread-id thread-id :step (:step latest)}))))
+        (let [state (if (map? input)
+                      (apply-updates (:channels graph) (:state latest) input)
+                      (:state latest))]
+          (run-loop graph opts state (:frontier latest) (:step latest) true)))
       (let [base (initial-state (:channels graph))
             ;; continue an existing (done) thread's state if present
             base (if latest (merge base (:state latest)) base)
