@@ -21,6 +21,41 @@
 (defn get-latest [cp thread-id] (-get-latest cp thread-id))
 (defn list-checkpoints [cp thread-id] (-list-checkpoints cp thread-id))
 
+;; ───────────────────────── atomic resume claim (optional) ─────────────────────
+;;
+;; A SEPARATE, additive protocol -- not required of every Checkpointer --
+;; so adding it can't break an existing implementation that doesn't (yet)
+;; support it. Without this, resuming an :interrupted thread is a plain
+;; read-then-act: langgraph.graph/run* reads the latest checkpoint, sees
+;; :status :interrupted, and runs the gated (interrupt-before) node --
+;; with NO synchronization between that read and the act of running the
+;; node. Two (or more) concurrent resume calls on the SAME thread-id (a
+;; realistic scenario: a retry, a double-click, a racing worker -- not a
+;; contrived edge case) can all read the SAME :interrupted checkpoint and
+;; all independently decide to resume, each running the gated node once
+;; -- silently bypassing interrupt-before's entire purpose as a human-in-
+;; the-loop safety gate. Confirmed empirically: 10 concurrent resume
+;; calls on one thread-id ran the gated node 5 times instead of 1.
+;;
+;; ClaimableCheckpointer closes this for any backend that implements it:
+;; langgraph.graph/run* checks `satisfies?` before resuming, and only
+;; proceeds if the claim succeeds (or the checkpointer doesn't support
+;; claiming at all, preserving the exact prior behavior for anyone not
+;; yet on a claiming-capable checkpointer -- not a breaking change).
+(defprotocol ClaimableCheckpointer
+  (-claim-resume! [cp thread-id expected]
+    "Atomically attempt to claim the right to resume `thread-id` from
+    `expected` (the :interrupted checkpoint the caller just read via
+    -get-latest). Returns true iff the persisted latest checkpoint for
+    thread-id is STILL == `expected` at the moment of the attempt (no
+    other caller has already claimed/advanced this thread since) --
+    and durably marks the claim in that same atomic step, so a
+    concurrent racer's own claim attempt correctly loses. Returns
+    false if the caller lost the race; the caller MUST NOT run the
+    gated node in that case."))
+
+(defn claim-resume! [cp thread-id expected] (-claim-resume! cp thread-id expected))
+
 (defn get-state-at
   "Time travel: the checkpoint at a given step (nil if absent)."
   [cp thread-id step]
@@ -28,12 +63,35 @@
 
 ;; ───────────────────────── in-memory ─────────────────────────
 
-(defn mem-checkpointer []
+(defn mem-checkpointer
+  "In-memory checkpointer, also `ClaimableCheckpointer` -- so
+  `langgraph.graph/run*` can safely resume an :interrupted thread even
+  under concurrent callers (see ClaimableCheckpointer's docstring for
+  why that matters). Implementing this is purely additive: `-put!`/
+  `-get-latest`/`-list-checkpoints` are unchanged, so every existing
+  caller of `mem-checkpointer` gets the race fixed for free, not an
+  opt-in. The check-and-mark happens ENTIRELY inside the swap! fn so
+  it recomputes against whatever `store` actually is on each CAS
+  retry -- the same correctness pattern as langchain.db/transact!'s
+  own fix for the identical class of read-then-write race."
+  []
   (let [store (atom {})]
-    (reify Checkpointer
+    (reify
+      Checkpointer
       (-put! [_ tid ckpt] (swap! store update tid (fnil conj []) ckpt) ckpt)
       (-get-latest [_ tid] (peek (get @store tid [])))
-      (-list-checkpoints [_ tid] (vec (sort-by :step (get @store tid [])))))))
+      (-list-checkpoints [_ tid] (vec (sort-by :step (get @store tid []))))
+
+      ClaimableCheckpointer
+      (-claim-resume! [_ tid expected]
+        (let [won? (volatile! false)]
+          (swap! store update tid
+                 (fn [ckpts]
+                   (if (= (peek ckpts) expected)
+                     (do (vreset! won? true)
+                         (conj ckpts (assoc expected :status :running)))
+                     (do (vreset! won? false) ckpts))))
+          @won?)))))
 
 ;; ───────────────────────── Datomic-backed ─────────────────────────
 
