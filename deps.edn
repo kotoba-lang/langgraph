@@ -4,9 +4,12 @@
  ;; Bumped past langchain#7/#8: parse-query's malformed-adjacent-marker
  ;; misparse fix and transact!'s swap!-retry-safety fix (the latter is
  ;; directly consequential here -- datomic-checkpointer's -put! calls
- ;; transact! for every superstep write).
+ ;; transact! for every superstep write). Also past langchain#9 (bumps
+ ;; kotoba-lang/json to pick up decode's number-grammar validation fix)
+ ;; -- consequential for kotoba-checkpoint's XRPC-backed checkpointer,
+ ;; which goes through langchain.kotoba-db's JSON codec.
  :deps {io.github.kotoba-lang/langchain
-        {:git/sha "0f8a15af0fc11bd998d0720ed23f5065d3e1c736"}}
+        {:git/sha "42ccbf5e17dd7fcfae32c78dcfdcb242ab75e97c"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
