@@ -16,6 +16,7 @@ src/langgraph/
   graph.cljc       StateGraph + Pregel superstep loop + interrupts
   checkpoint.cljc  checkpointers (in-memory / Datomic) — resume & time travel
   prebuilt.cljc    create-react-agent
+  agent_loop.cljc  provider-neutral model -> tools -> results turn reducer
   viz.cljc         graph → Mermaid
 ```
 
