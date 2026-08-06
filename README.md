@@ -37,6 +37,10 @@ src/langgraph/
 
 ## Quickstart
 
+Running one behind a supervisor rather than reading the API? Start with
+[docs/operator-quickstart.md](docs/operator-quickstart.md) — the four
+runtime behaviours that surprise hosts, each with a command that shows it.
+
 ```clojure
 ;; deps.edn
 ;; {:deps {io.github.kotoba-lang/langgraph {:git/tag "v0.2.0" :git/sha "…"}}}
@@ -102,12 +106,12 @@ injected-I/O rationale. The LangChain layer lives in
 ## Tests / example
 
 ```sh
-clojure -M:test     # 9 tests, 24 assertions (graph / checkpoint / agent layer)
-clojure -Sdeps '{:paths ["src" "examples"]
-                 :deps {io.github.kotoba-lang/langchain
-                        {:git/tag "v0.1.0" :git/sha "ae475c9"}}}' \
+clojure -M:test     # 29 tests, 92 assertions (graph / checkpoint / agent layer)
+clojure -Sdeps '{:paths ["src" "examples"]}' \
         -M -e "(require 'react-agent) (react-agent/-main)"
 ```
+
+The example runs offline against a mock model — no API key needed.
 
 Workspace development against a local langchain checkout:
 `clojure -M:dev:test`.
