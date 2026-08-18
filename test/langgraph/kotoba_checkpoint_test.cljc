@@ -5,6 +5,7 @@
             #?(:clj  [clojure.edn :as edn]
                :cljs [cljs.reader :as edn])
             [clojure.string :as str]
+            [langchain.db                :as db]
             [langchain.kotoba-db         :as kdb]
             [langgraph.checkpoint        :as cp]
             [langgraph.kotoba-checkpoint :as kcp]))
@@ -13,6 +14,50 @@
 
 (defn- nsid-from-url [url]
   (last (str/split url #"/xrpc/")))
+
+(defn- wire-elem
+  "One attribute value, encoded the way kotobase-server's wildcard pull
+  actually puts it on the wire: a STRING goes RAW (unquoted), every other
+  type goes as its own `pr-str`. Confirmed against the live edge by
+  `langchain.kotoba-db/decode-pull-value`, whose docstring records the
+  measurement (2026-07-18) and the symbol guard it needs as a result.
+
+  Kept faithful deliberately, but NOT currently load-bearing: mutating this
+  to pr-str strings too was tried on 2026-08-19 and no test went red, because
+  `->ckpt` reads back only step/state/frontier/status and none of those is a
+  bare string attribute -- the raw-vs-pr-str distinction has no observable
+  effect through this checkpointer. It would start mattering the moment
+  something reads `:checkpoint/thread` back, or if upstream's symbol guard
+  regressed (it did once, see that fn's docstring). Do not \"simplify\" this to
+  a bare pr-str on the grounds that the suite stays green -- the suite staying
+  green is exactly what this file got wrong before."
+  [v]
+  (if (string? v) v (pr-str v)))
+
+(defn- wildcard-result-edn
+  "An entity map, encoded as the `:result_edn` a `[*]` pull returns:
+  `{\":attr\" #{\"wire-value\"}}` -- keys are pr-str'd keywords, and EVERY
+  value is set-wrapped regardless of Datomic cardinality.
+
+  Three facts here were fiction in this mock until 2026-08-19, and each
+  one was load-bearing:
+
+    1. the request's `:entity` is a PLAIN string, never `pr-str`'d and
+       never `edn/read-string`'d server-side -- this mock used to read it,
+       which throws `Invalid token: thread-1/0` on the very key format
+       `datomic-checkpointer` builds (`\"<thread>/<step>\"` is not a legal
+       symbol);
+    2. the response field is `:result_edn`; the live edge returns NO field
+       named `entity_edn` from this NSID at all;
+    3. values come back DECODED, so a pr-str'd `:checkpoint/state` arrives
+       as a map, not as the EDN string it was written as.
+
+  Because the mock agreed with an older client that was wrong in the same
+  three ways, these tests were green against a protocol the server does
+  not speak. Encoding the real shape here is what makes them mean
+  anything -- see `langgraph.checkpoint/decode-edn-attr`."
+  [entity]
+  (pr-str (into {} (map (fn [[k v]] [(pr-str k) #{(wire-elem v)}])) entity)))
 
 (defn- stateful-mock-caps
   "Mock host-caps backed by an in-memory store that simulates kotoba's
@@ -72,14 +117,12 @@
                   :rows_edn (mapv (fn [k] [(pr-str k)]) (or ekeys []))}))
 
              "ai.gftd.apps.kotobase.datomic.pull"
-             (let [eid-edn (:entity parsed)
-                   eid     (edn/read-string eid-edn)
-                   ;; lookup ref [:checkpoint/key "t/5"] or bare key string
-                   ck-key  (if (vector? eid) (second eid) eid)
-                   entity  (get @store ck-key)]
-               {:graph "g" :basis_t nil
-                :entity (pr-str ck-key) :datom_count 5 :datoms []
-                :entity_edn (pr-str (or entity {}))})
+             ;; The live contract, NOT the intuitive one. See
+             ;; `wildcard-result-edn` and the three facts above it.
+             (let [ck-key (:entity parsed)          ; PLAIN string, never read
+                   entity (get @store ck-key)]
+               {:graph "g" :basis_t nil :datom_count 5 :datoms []
+                :result_edn (wildcard-result-edn (or entity {}))})
 
              ;; unknown NSID
              (throw (ex-info "unknown nsid in mock" {:nsid nsid}))))}))
@@ -160,3 +203,116 @@
       (is (= 1 (count @captured)))
       (is (= "ai.gftd.apps.kotobase.datomic.transact"
              (:nsid (first @captured)))))))
+
+;; ─── wire contract ───────────────────────────────────────────────────────────
+;;
+;; The tests above exercise the checkpointer THROUGH the mock, so they only
+;; hold if the mock speaks the protocol the live edge speaks. It did not:
+;; until 2026-08-19 it read `:entity` as EDN and answered with `:entity_edn`,
+;; and an older pinned client was wrong in exactly the same two ways, so the
+;; two fictions agreed and the suite stayed green. These tests assert on the
+;; wire FIELDS directly, so the next divergence fails here -- naming the field
+;; -- instead of somewhere downstream, or not at all.
+
+(def ^:private pull-nsid "ai.gftd.apps.kotobase.datomic.pull")
+(def ^:private q-nsid    "ai.gftd.apps.kotobase.datomic.q")
+
+(defn- recording-caps
+  "Wraps `caps` so every request is appended to `log` as {:nsid :body}, with
+  the body decoded. These tests assert on what was actually SENT, so the log
+  has to capture the request rather than re-derive it."
+  [caps log]
+  (update caps :http-fn
+          (fn [f]
+            (fn [req]
+              (swap! log conj {:nsid (nsid-from-url (:url req))
+                               :body (edn/read-string (:body req))})
+              (f req)))))
+
+(defn- first-req [log nsid]
+  (->> @log (filter #(= nsid (:nsid %))) first :body))
+
+(deftest pull-sends-entity-as-a-plain-string
+  (let [log  (atom [])
+        caps (recording-caps (stateful-mock-caps) log)
+        cp   (kcp/checkpointer test-conn caps)]
+    (cp/put! cp "thread-w1" {:step 0 :state {:x 1} :frontier [:a] :status :running})
+    (cp/get-latest cp "thread-w1")
+    (let [req (first-req log pull-nsid)]
+      (is (some? req) "get-latest must issue a pull")
+      (testing ":entity is the plain key -- kotobase uses it as-is and never parses it"
+        (is (= "thread-w1/0" (:entity req)))
+        (is (not= (pr-str "thread-w1/0") (:entity req))
+            "pr-str'ing :entity pulled an empty entity against the live edge"))
+      (testing "and the key datomic-checkpointer builds is not a readable token"
+        ;; "<thread>/<step>" parses as a symbol whose name starts with a
+        ;; digit. This throw is exactly what the old mock did on every pull.
+        (is (thrown? #?(:clj Exception :cljs js/Error)
+                     (edn/read-string (:entity req))))))))
+
+(deftest pull-always-requests-the-wildcard-pattern
+  (let [log  (atom [])
+        caps (recording-caps (stateful-mock-caps) log)
+        cp   (kcp/checkpointer test-conn caps)]
+    (cp/put! cp "thread-w2" {:step 0 :state {:x 1} :frontier [] :status :running})
+    (cp/get-latest cp "thread-w2")
+    (testing "a non-wildcard attr list returns {} from the live edge, so [*] is sent unconditionally and filtered client-side"
+      (is (= "[*]" (:pattern_edn (first-req log pull-nsid)))))))
+
+(deftest q-sends-a-map-shaped-query
+  (let [log  (atom [])
+        caps (recording-caps (stateful-mock-caps) log)
+        cp   (kcp/checkpointer test-conn caps)]
+    (cp/put! cp "thread-w4" {:step 0 :state {:x 1} :frontier [] :status :running})
+    (cp/get-latest cp "thread-w4")
+    (let [qedn (edn/read-string (:query_edn (first-req log q-nsid)))]
+      (testing "vector-shaped query_edn is read as a single triple pattern and silently matches nothing"
+        (is (map? qedn))
+        (is (contains? qedn :find))
+        (is (contains? qedn :where))))))
+
+(deftest an-entity-edn-response-is-not-read
+  ;; The precise fiction this file used to contain, pinned as a fact: this
+  ;; NSID returns no field named entity_edn, so a mock that answers with one
+  ;; is not modelling the edge. If this ever passes, the client has grown a
+  ;; fallback onto a field the server does not send.
+  (let [caps {:http-fn
+              (fn [{:keys [url]}]
+                (let [nsid (nsid-from-url url)]
+                  {:status 200
+                   :body
+                   (pr-str
+                    (if (= nsid pull-nsid)
+                      {:graph "g" :basis_t nil
+                       :entity_edn (pr-str {:checkpoint/step 0
+                                            :checkpoint/state (pr-str {:x 1})
+                                            :checkpoint/frontier (pr-str [:a])
+                                            :checkpoint/status :running})}
+                      ;; scalar (max ?step) -> step 0 exists for any thread
+                      {:graph "g" :basis_t nil :rows_edn [[(pr-str 0)]]}))}))
+              :json-write pr-str
+              :json-read  edn/read-string}
+        got  (cp/get-latest (kcp/checkpointer test-conn caps) "thread-w3")]
+    (testing "nothing is recovered from entity_edn"
+      (is (nil? (:state got)))
+      (is (nil? (:status got))))))
+
+(deftest state-round-trips-identically-through-both-substrates
+  ;; The two substrates hand :checkpoint/state back in DIFFERENT shapes --
+  ;; langchain.db as the EDN string it was written as, kotoba's wildcard pull
+  ;; already parsed. A checkpointer that reads only one of them is broken on
+  ;; the other; before decode-edn-attr, reading a kotoba-backed checkpoint
+  ;; threw ClassCastException on every call.
+  (let [ckpt {:step 0
+              :state {:x 1 :nested {:deep [1 2 3]} :s "a string"}
+              :frontier [:a :b]
+              :status :running}
+        kot  (kcp/checkpointer test-conn (stateful-mock-caps))
+        mem  (cp/datomic-checkpointer (db/create-conn cp/checkpoint-schema))]
+    (cp/put! kot "t" ckpt)
+    (cp/put! mem "t" ckpt)
+    (testing "each substrate returns what was written"
+      (is (= ckpt (cp/get-latest mem "t")))
+      (is (= ckpt (cp/get-latest kot "t"))))
+    (testing "and they agree with each other"
+      (is (= (cp/get-latest mem "t") (cp/get-latest kot "t"))))))

@@ -9,7 +9,7 @@
  ;; -- consequential for kotoba-checkpoint's XRPC-backed checkpointer,
  ;; which goes through langchain.kotoba-db's JSON codec.
  :deps {io.github.kotoba-lang/langchain
-        {:git/sha "42ccbf5e17dd7fcfae32c78dcfdcb242ab75e97c"}}
+        {:git/sha "52bca7b5b621f48d29e693f642d348d2962bb14e"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
