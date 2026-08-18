@@ -104,6 +104,34 @@
    :checkpoint/frontier {}   ; pr-str EDN
    :checkpoint/status   {}})
 
+(defn- decode-edn-attr
+  "`:checkpoint/state` and `:checkpoint/frontier` are written as `pr-str`
+  EDN (see `checkpoint-schema`), so the obvious read is `edn/read-string`.
+  That is correct for a substrate that hands the attribute back as the
+  STRING it was written as -- `langchain.db`'s in-memory store does, and
+  did so for every caller until a second substrate appeared.
+
+  kotoba-server's wildcard pull does NOT. Its wire format sends a string
+  attribute RAW, and `langchain.kotoba-db`'s decoder trusts any raw value
+  that survives an `edn/read-string` -> `pr-str` round-trip -- which a
+  pr-str'd map or vector does BY CONSTRUCTION. So `(pr-str {:x 1})` is
+  written, and `{:x 1}` -- already parsed, a map -- is what comes back.
+  `edn/read-string` then throws ClassCastException (it takes a String),
+  meaning the kotoba-backed checkpointer could not read back ANY
+  checkpoint it had written. Measured 2026-08-19 against
+  langchain 52bca7b5; see `langgraph.kotoba-checkpoint-test`, whose mock
+  had modelled a wire contract the live edge does not speak and so kept
+  this green.
+
+  Decoding only when the value is still a string handles both substrates
+  and is idempotent. The residual ambiguity is the substrate's, not this
+  fn's: a state whose value is ITSELF a string round-trips to a different
+  type through that decoder, so this checkpointer's contract stays what
+  the protocol already documents -- `:state` is a map, `:frontier` a
+  vector of nodes."
+  [v]
+  (if (string? v) (edn/read-string v) v))
+
 (defn datomic-checkpointer
   "Checkpointer over a Datomic-API connection. `db-api` defaults to the
   built-in langchain.db; pass a Datomic/DataScript-shaped map to swap
@@ -113,8 +141,8 @@
    (let [{:keys [q transact! db pull]} db-api
          ->ckpt (fn [m]
                   {:step (:checkpoint/step m)
-                   :state (edn/read-string (:checkpoint/state m))
-                   :frontier (edn/read-string (:checkpoint/frontier m))
+                   :state (decode-edn-attr (:checkpoint/state m))
+                   :frontier (decode-edn-attr (:checkpoint/frontier m))
                    :status (:checkpoint/status m)})]
      (reify Checkpointer
        (-put! [_ tid {:keys [step state frontier status] :as ckpt}]
