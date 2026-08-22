@@ -20,20 +20,28 @@
 ;; not ("Invalid keyword: :kg/claim/thread."), so the namespace cannot even
 ;; be read here. That is a real portability defect in the attribute name
 ;; rather than in this runner, and renaming an attribute is a schema change
-;; this file is not the place to make. Until it is made, this runner is 38
-;; of the JVM's 45 tests, and the seven are that one namespace.
+;; this file is not the place to make. Until it is made, that namespace is
+;; the one the JVM runs and this runner does not.
 ;;
 ;; Every deftest-bearing portable namespace is named BOTH in the require and
 ;; in the `run-tests` call: requiring registers the vars, only `run-tests`
 ;; runs them, and a runner naming a subset prints the same `Ran N tests`
-;; shape as one naming all of them.
+;; shape as one naming all of them. That is not left to this comment:
+;; `langgraph.runner-coverage-test` reads this file and fails when a
+;; `test/langgraph/*_test.cljc` is missing from either list without being
+;; named in its exclusions — because it happened. `checkpoint_test.cljc`
+;; landed the day after this runner and was absent from it for two days,
+;; with the line above claiming exactly one namespace was.
 (ns run-tests
   (:require [cljs.test :as t]
+            [langgraph.agent-loop-contract-test]
             [langgraph.agent-loop-test]
             [langgraph.agent-test]
+            [langgraph.checkpoint-test]
             [langgraph.graph-test]
             [langgraph.kotoba-checkpoint-test]
             [langgraph.operator-quickstart-test]
+            [langgraph.runner-coverage-test]
             [langgraph.superstep-test]
             [langgraph.thread-custody-test]
             [langgraph.viz-test]))
@@ -44,11 +52,14 @@
   (when (pos? (+ (or (:fail m) 0) (or (:error m) 0)))
     (set! (.-exitCode js/process) 1)))
 
-(t/run-tests 'langgraph.agent-loop-test
+(t/run-tests 'langgraph.agent-loop-contract-test
+             'langgraph.agent-loop-test
              'langgraph.agent-test
+             'langgraph.checkpoint-test
              'langgraph.graph-test
              'langgraph.kotoba-checkpoint-test
              'langgraph.operator-quickstart-test
+             'langgraph.runner-coverage-test
              'langgraph.superstep-test
              'langgraph.thread-custody-test
              'langgraph.viz-test)
