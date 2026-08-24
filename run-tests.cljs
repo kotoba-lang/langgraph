@@ -37,6 +37,7 @@
             [langgraph.agent-loop-contract-test]
             [langgraph.agent-loop-test]
             [langgraph.agent-test]
+            [langgraph.catalog-test]
             [langgraph.checkpoint-test]
             [langgraph.graph-test]
             [langgraph.kotoba-checkpoint-test]
@@ -55,6 +56,7 @@
 (t/run-tests 'langgraph.agent-loop-contract-test
              'langgraph.agent-loop-test
              'langgraph.agent-test
+             'langgraph.catalog-test
              'langgraph.checkpoint-test
              'langgraph.graph-test
              'langgraph.kotoba-checkpoint-test
