@@ -35,6 +35,11 @@ src/langgraph/
   leases, sleep/cadence, crash recovery, budgets, and worker lifecycle;
   the graph owns one auditable step with checkpoint/interrupt support.
 
+Which upstream document each namespace mirrors — with the URL that was
+actually fetched, and when — is pinned in
+[docs/catalog.edn](docs/catalog.edn) (shape enforced by
+`test/langgraph/catalog_test.cljc`).
+
 ## Quickstart
 
 Running one behind a supervisor rather than reading the API? Start with
