@@ -41,6 +41,24 @@
       (is (= [:done 2] (call! nil)) "…and the next nil call resumes through the gate AGAIN")
       (is (= [:interrupted 2] (call! nil))))))
 
+(deftest channel-state-accumulates-across-ticks-on-a-done-thread
+  (testing "quickstart §5.1 companion: a fresh tick on a :done thread
+            re-arms interrupt-before from the entry point, but channel
+            reducers still see the prior tick's accumulated state —
+            run* seeds from (merge (initial-state channels) (:state latest)).
+            A supervisor that assumes each tick starts from channel
+            defaults will mis-count approvals, double-charge ledgers, or
+            drop audit history that the graph deliberately carried."
+    (let [runs (atom 0)
+          cg (gated-graph (cp/mem-checkpointer) runs)]
+      (is (= :interrupted (:status (g/run* cg {} {:thread-id "t"}))))
+      (is (= :done (:status (g/run* cg nil {:thread-id "t"}))))
+      (is (= [:draft :send] (:log (:state (cp/get-latest (get-in cg [:opts :checkpointer]) "t")))))
+      (is (= :interrupted (:status (g/run* cg {} {:thread-id "t"})))
+      (is (= [:draft :send :draft]
+             (:log (:state (cp/get-latest (get-in cg [:opts :checkpointer]) "t"))))
+          "the second tick's :draft ran against the first tick's log, not a blank slate")))))
+
 ;; ── §5.2 ─────────────────────────────────────────────────────────────
 (deftest which-checkpointers-claim
   (testing "quickstart §5.2 hazard table: `run*` only takes an atomic
