@@ -9,7 +9,7 @@
   that backwards produces a diagram that either fails to render or
   renders under names nobody can grep for."
   (:require [clojure.test :refer [deftest is testing]]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [langgraph.graph :as g]
             [langgraph.viz :as viz]))
 

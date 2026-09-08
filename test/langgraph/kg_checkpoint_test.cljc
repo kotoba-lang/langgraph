@@ -2,7 +2,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             #?(:clj  [clojure.edn :as edn]
                :cljs [cljs.reader :as edn])
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [langchain.kotoba-db    :as kdb]
             [langgraph.kg-checkpoint :as kgcp]
             [langgraph.checkpoint    :as cp]))

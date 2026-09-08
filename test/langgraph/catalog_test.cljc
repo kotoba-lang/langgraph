@@ -17,7 +17,7 @@
   to the repo root, where `clojure -M:test` and the fleet's
   `npx nbb … run-tests.cljs` are both invoked."
   (:require [clojure.test :refer [deftest is testing]]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             #?(:clj [clojure.edn :as edn]
                :cljs [cljs.reader :as edn])
             #?(:cljs ["fs" :as fs])))

@@ -26,7 +26,7 @@
             [langgraph.checkpoint :as cp]
             [langchain.db :as db]
             [clojure.java.shell :as sh]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [clojure.set :as set]
             [clojure.edn :as edn]))
 
