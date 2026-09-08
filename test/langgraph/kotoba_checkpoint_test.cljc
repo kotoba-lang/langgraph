@@ -4,7 +4,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             #?(:clj  [clojure.edn :as edn]
                :cljs [cljs.reader :as edn])
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [langchain.db                :as db]
             [langchain.kotoba-db         :as kdb]
             [langgraph.checkpoint        :as cp]

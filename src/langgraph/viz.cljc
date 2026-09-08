@@ -1,6 +1,6 @@
 (ns langgraph.viz
   "Graph → Mermaid flowchart string."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [langgraph.graph :as g]))
 
 (defn- node-id [n]

@@ -8,7 +8,12 @@
  ;; kotoba-lang/json to pick up decode's number-grammar validation fix)
  ;; -- consequential for kotoba-checkpoint's XRPC-backed checkpointer,
  ;; which goes through langchain.kotoba-db's JSON codec.
- :deps {io.github.kotoba-lang/langchain
+ :deps {
+        ;; kotoba.lang.text, not clojure.string. Pinned as an explicit floor:
+        ;; tools.deps takes the NEWEST sha it is shown, so without a floor here
+        ;; this repo silently rides whatever a sibling happens to name.
+        io.github.kotoba-lang/text {:git/sha "73bdb13ae7a3d004b44bca08be03a3191157a38f"}
+       io.github.kotoba-lang/langchain
         {:git/sha "52bca7b5b621f48d29e693f642d348d2962bb14e"}}
  :aliases
  {:test {:extra-paths ["test"]
