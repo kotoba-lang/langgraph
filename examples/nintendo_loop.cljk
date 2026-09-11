@@ -262,6 +262,6 @@
      {:name "add_fx"      :description "add screen‑shake / particles / squash for juice (host :fx)"
       :schema {:type "object" :properties {:event {:type "string"} :fx {:type "object"}}} :fn add-fx!}])
   ;; Reason = prebuilt/create-react-agent over edit-tools, prompted with the worst dim + defects.
-  ;; Apply  = run the agent's chosen tool, `shadow-cljs release` if kami touched, then
+  ;; Apply  = run the agent's chosen tool, `amu compile --target wasm32-browser` if kami touched, then
   ;;          harness‑smoke (compiles? no soft‑lock?) — return {:build-ok? :smoke :backup git-stash-id}.
   )

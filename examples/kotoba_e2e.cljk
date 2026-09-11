@@ -8,7 +8,7 @@
     KOTOBA_URL=http://localhost:8077 \\
     KOTOBA_GRAPH=bafyreici6lf6ewlgskwxznw5sa6kydis3y6nmy5qhjq5f7rbog3u7dapc4 \\
     KOTOBA_TOKEN=<operator-jwt> \\
-    clojure -A:dev -Sdeps '{:paths [\"src\" \"examples\"],
+    kbb -A:dev -Sdeps '{:paths [\"src\" \"examples\"],
                             :deps {org.clojure/data.json {:mvn/version \"2.5.0\"}}}' \\
            -M -e '(require (quote kotoba-e2e)) (kotoba-e2e/-main)'
 
@@ -16,7 +16,7 @@
     KOTOBA_URL=https://kotobase.net \\
     KOTOBA_TOKEN=<bearer-jwt> \\
     KOTOBA_KG=1 \\
-    clojure -A:dev -Sdeps '{:paths [\"src\" \"examples\"],
+    kbb -A:dev -Sdeps '{:paths [\"src\" \"examples\"],
                             :deps {org.clojure/data.json {:mvn/version \"2.5.0\"}}}' \\
            -M -e '(require (quote kotoba-e2e)) (kotoba-e2e/-main)'
 

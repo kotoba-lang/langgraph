@@ -111,6 +111,6 @@ Datomic 属性 `:kg/claim/thread` / `:kg/claim/step` / `:kg/claim/state` /
 
 ## 帰結
 
-- 同一コードが JVM / SCI / CLJS / WASM で動く。テストは JVM (`clojure -M:test`) で実行。
+- 同一コードが JVM / SCI / CLJS / WASM で動く。テストは JVM (`kbb -M:test`) で実行。
 - エージェントの全実行履歴がワークスペースの事実層(ADR-0010)と同じ表現になり、
   m365-archive 等の既存 datom と join できる。

@@ -111,12 +111,12 @@ injected-I/O rationale. The LangChain layer lives in
 ## Tests / example
 
 ```sh
-clojure -M:test     # 29 tests, 92 assertions (graph / checkpoint / agent layer)
-clojure -Sdeps '{:paths ["src" "examples"]}' \
+kbb -M:test     # 29 tests, 92 assertions (graph / checkpoint / agent layer)
+kbb -Sdeps '{:paths ["src" "examples"]}' \
         -M -e "(require 'react-agent) (react-agent/-main)"
 ```
 
 The example runs offline against a mock model — no API key needed.
 
 Workspace development against a local langchain checkout:
-`clojure -M:dev:test`.
+`kbb -M:dev:test`.

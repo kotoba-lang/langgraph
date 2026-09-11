@@ -1,7 +1,7 @@
 (ns react-agent
   "ReAct agent example. Runs offline with the mock model:
 
-     clojure -Sdeps '{:paths [\"src\" \"examples\"]}' -M -e \"(require 'react-agent) (react-agent/-main)\"
+     kbb -Sdeps '{:paths [\"src\" \"examples\"]}' -M -e \"(require 'react-agent) (react-agent/-main)\"
 
   The commented block at the bottom shows how to wire the real
   Anthropic adapter on a JVM host (the library itself does no I/O —

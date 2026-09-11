@@ -14,7 +14,7 @@
   What IS checked live is everything the repo itself can answer.
 
   Like runner-coverage-test it runs on both runtimes and reads relative
-  to the repo root, where `clojure -M:test` and the fleet's
+  to the repo root, where `kbb -M:test` and the fleet's
   `npx nbb … run-tests.cljk` are both invoked."
   (:require [clojure.test :refer [deftest is testing]]
             [kotoba.lang.text :as str]
