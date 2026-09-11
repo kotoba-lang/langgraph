@@ -1,5 +1,5 @@
 (ns nintendo-loop-live
-  "LIVE wiring of the Nintendo Loop (examples/nintendo_loop.cljc) against the REAL
+  "LIVE wiring of the Nintendo Loop (examples/nintendo_loop.cljk) against the REAL
    network-isekai game `gftd/yoro` — headless, no browser, no API key.
 
    The langgraph-clj graph is unchanged; only the injected host capabilities are real:

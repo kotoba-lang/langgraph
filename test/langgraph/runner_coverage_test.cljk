@@ -1,5 +1,5 @@
 (ns langgraph.runner-coverage-test
-  "Pins that `run-tests.cljs` — the nbb entry the fleet's `:nbb-test` gate
+  "Pins that `run-tests.cljk` — the nbb entry the fleet's `:nbb-test` gate
   runs — names every test namespace in this repo, or names why not.
 
   A runner listing a subset of the namespaces prints the same
@@ -21,13 +21,13 @@
   the exclusion has expired and the namespace belongs in the runner.
 
   It runs on both runtimes and reads relative to the repo root, which is
-  where `clojure -M:test` and the fleet's `npx nbb … run-tests.cljs` are
+  where `clojure -M:test` and the fleet's `npx nbb … run-tests.cljk` are
   both invoked."
   (:require [clojure.test :refer [deftest is testing]]
             [kotoba.lang.text :as str]
             #?(:cljs ["fs" :as fs])))
 
-(def ^:private runner "run-tests.cljs")
+(def ^:private runner "run-tests.cljk")
 (def ^:private test-dir "test/langgraph")
 
 (def ^:private excluded
@@ -35,7 +35,7 @@
   substring that must still be present in the named source file. When
   the substring is gone the exclusion is stale and the test says so."
   {'langgraph.kg-checkpoint-test
-   {:file "src/langgraph/kg_checkpoint.cljc"
+   {:file "src/langgraph/kg_checkpoint.cljk"
     :still-contains ":kg/claim/thread"
     :because "two-slash keyword: the Clojure reader accepts it, the ClojureScript reader does not"}})
 

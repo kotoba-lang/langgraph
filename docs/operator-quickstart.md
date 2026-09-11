@@ -8,7 +8,7 @@ The README describes the shape of the library. This describes the four
 things it does at runtime that will surprise you, and the commands that
 show each one. Every command and every block of output on this page was
 executed against this checkout; §5's claims are pinned by
-[`test/langgraph/operator_quickstart_test.cljc`](../test/langgraph/operator_quickstart_test.cljc)
+[`test/langgraph/operator_quickstart_test.cljk`](../test/langgraph/operator_quickstart_test.cljk)
 so they cannot rot silently.
 
 ---
@@ -39,7 +39,7 @@ If this is red, stop here — nothing below is diagnosable until it is green.
 
 ## 2. Run an agent end to end, offline
 
-`examples/react_agent.clj` wires a mock model, a tool, and a
+`examples/react_agent.cljk` wires a mock model, a tool, and a
 Datomic-backed checkpointer, so a full ReAct loop runs with no network:
 
 ```
@@ -189,7 +189,7 @@ Both ran the identical two ticks. Consequences you have to design around:
 ## 5. Before you put this behind a supervisor
 
 Four runtime facts, each pinned by a test in
-[`operator_quickstart_test.cljc`](../test/langgraph/operator_quickstart_test.cljc).
+[`operator_quickstart_test.cljc`](../test/langgraph/operator_quickstart_test.cljk).
 
 ### 5.1 `run*` is one tick. It is not "resume until done"
 
@@ -292,4 +292,4 @@ with a checkpoint at each end.
 - [`docs/adr/0003-coding-agent-turn-loop.md`](adr/0003-coding-agent-turn-loop.md)
   — `langgraph.agent-loop`, the pure reducer for hosts that want to
   interpret effects themselves rather than let the graph call tools.
-- `examples/nintendo_loop.cljc` — a longer durable-loop worked example.
+- `examples/nintendo_loop.cljk` — a longer durable-loop worked example.
