@@ -30,7 +30,7 @@ git dependency (`kotoba-lang/langchain`). After that everything is local.
 ## 1. Confirm the checkout is green
 
 ```
-$ clojure -M:test
+$ kbb -M:test
 Ran 29 tests containing 92 assertions.
 0 failures, 0 errors.
 ```
@@ -43,7 +43,7 @@ If this is red, stop here — nothing below is diagnosable until it is green.
 Datomic-backed checkpointer, so a full ReAct loop runs with no network:
 
 ```
-$ clojure -Sdeps '{:paths ["src" "examples"]}' \
+$ kbb -Sdeps '{:paths ["src" "examples"]}' \
     -M -e "(require 'react-agent) (react-agent/-main)"
 flowchart TD
   START([start])
@@ -68,7 +68,7 @@ tool-call message, which carries no text content.
 ## 3. Interrupt, inspect, edit, resume
 
 This is the whole human-in-the-loop cycle. Save as `tour.clj` and run it
-with `clojure -Sdeps '{:paths ["src"]}' -M tour.clj`:
+with `kbb -Sdeps '{:paths ["src"]}' -M tour.clj`:
 
 ```clojure
 (require '[langgraph.graph :as g]

@@ -21,7 +21,7 @@
   the exclusion has expired and the namespace belongs in the runner.
 
   It runs on both runtimes and reads relative to the repo root, which is
-  where `clojure -M:test` and the fleet's `npx nbb … run-tests.cljk` are
+  where `kbb -M:test` and the fleet's `npx nbb … run-tests.cljk` are
   both invoked."
   (:require [clojure.test :refer [deftest is testing]]
             [kotoba.lang.text :as str]

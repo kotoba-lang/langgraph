@@ -1,12 +1,12 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; The portable suite on nbb — no build step, no JVM.
 ;;
 ;; Every source and every test namespace here is `.cljc`, and until this
-;; file existed `clojure -M:test` was the only runtime that ever ran them,
+;; file existed `kbb -M:test` was the only runtime that ever ran them,
 ;; so a defect in the ClojureScript half of a `.cljc` was invisible
 ;; (ADR-2608190100).
 ;;
-;;   nbb --classpath "src:test:$(clojure -Spath -M:test)" run-tests.cljk
+;;   kbb --backend sci --classpath "src:test:$(kbb -Spath -M:test)" run-tests.cljk
 ;;
 ;; The classpath needs the git dep (langchain); nbb does not read deps.edn.
 ;; On the fleet that is what `:ship-git-deps true` supplies.

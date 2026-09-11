@@ -18,7 +18,7 @@
 
    Run:
      cd com-junkawasaki/langgraph-clj
-     clojure -Sdeps '{:paths [\"src\" \"examples\"] \\
+     kbb -Sdeps '{:paths [\"src\" \"examples\"] \\
        :deps {io.github.com-junkawasaki/langchain-clj {:local/root \"../langchain-clj\"}}}' \\
        -M -e \"(require 'nintendo-loop-live)(nintendo-loop-live/-main)\""
   (:require [nintendo-loop :as nl]
