@@ -38,7 +38,7 @@ src/langgraph/
 Which upstream document each namespace mirrors — with the URL that was
 actually fetched, and when — is pinned in
 [docs/catalog.edn](docs/catalog.edn) (shape enforced by
-`test/langgraph/catalog_test.cljc`).
+`test/langgraph/catalog_test.cljk`).
 
 ## Quickstart
 

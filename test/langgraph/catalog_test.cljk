@@ -15,7 +15,7 @@
 
   Like runner-coverage-test it runs on both runtimes and reads relative
   to the repo root, where `clojure -M:test` and the fleet's
-  `npx nbb … run-tests.cljs` are both invoked."
+  `npx nbb … run-tests.cljk` are both invoked."
   (:require [clojure.test :refer [deftest is testing]]
             [kotoba.lang.text :as str]
             #?(:clj [clojure.edn :as edn]

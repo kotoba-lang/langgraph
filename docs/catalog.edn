@@ -6,7 +6,7 @@
 ;; upstream documents the namespaces are ports of. Each entry names the
 ;; concept, the file(s) here that mirror it, and one URL.
 ;;
-;; Discipline (enforced by test/langgraph/catalog_test.cljc):
+;; Discipline (enforced by test/langgraph/catalog_test.cljk):
 ;;   - :url was fetched on :verified and the FINAL response was :http
 ;;     (redirect-resolved — a URL that only answers via a chain of 301s
 ;;     is recorded at its terminal address, not its historical one).
@@ -27,67 +27,67 @@
    :http 200 :verified "2026-08-24"}
 
   {:subject "StateGraph low-level concepts: channels, reducers, START/END, conditional edges"
-   :mirrors ["src/langgraph/graph.cljc"]
+   :mirrors ["src/langgraph/graph.cljk"]
    :url "https://langchain-ai.github.io/langgraph/concepts/low_level/"
    :http 200 :verified "2026-08-24"}
 
   {:subject "StateGraph / CompiledGraph API reference"
-   :mirrors ["src/langgraph/graph.cljc"]
+   :mirrors ["src/langgraph/graph.cljk"]
    :url "https://langchain-ai.github.io/langgraph/reference/graphs/"
    :http 200 :verified "2026-08-24"}
 
   {:subject "persistence concepts: checkpointer, threads, checkpoint tuples"
-   :mirrors ["src/langgraph/checkpoint.cljc"]
+   :mirrors ["src/langgraph/checkpoint.cljk"]
    :url "https://langchain-ai.github.io/langgraph/concepts/persistence/"
    :http 200 :verified "2026-08-24"}
 
   {:subject "BaseCheckpointSaver API reference (put/get-tuple/list shape)"
-   :mirrors ["src/langgraph/checkpoint.cljc"]
+   :mirrors ["src/langgraph/checkpoint.cljk"]
    :url "https://langchain-ai.github.io/langgraph/reference/checkpoints/"
    :http 200 :verified "2026-08-24"}
 
   {:subject "time travel: replaying and forking from a prior checkpoint"
-   :mirrors ["src/langgraph/checkpoint.cljc"]
+   :mirrors ["src/langgraph/checkpoint.cljk"]
    :url "https://langchain-ai.github.io/langgraph/concepts/time-travel/"
    :http 200 :verified "2026-08-24"}
 
   {:subject "human-in-the-loop: interrupt before/after, resume with state update"
-   :mirrors ["src/langgraph/graph.cljc"]
+   :mirrors ["src/langgraph/graph.cljk"]
    :url "https://langchain-ai.github.io/langgraph/concepts/human_in_the_loop/"
    :http 200 :verified "2026-08-24"}
 
   {:subject "durable execution: the bounded-tick / host-supervisor loop boundary"
-   :mirrors ["src/langgraph/agent_loop.cljc" "docs/operator-quickstart.md"]
+   :mirrors ["src/langgraph/agent_loop.cljk" "docs/operator-quickstart.md"]
    :url "https://langchain-ai.github.io/langgraph/concepts/durable_execution/"
    :http 200 :verified "2026-08-24"}
 
   {:subject "prebuilt agents reference: create_react_agent"
-   :mirrors ["src/langgraph/prebuilt.cljc"]
+   :mirrors ["src/langgraph/prebuilt.cljk"]
    :url "https://langchain-ai.github.io/langgraph/reference/prebuilt/"
    :http 200 :verified "2026-08-24"}
 
   {:subject "Pregel: the superstep model the graph runner executes (Malewicz et al., SIGMOD 2010)"
-   :mirrors ["src/langgraph/graph.cljc"]
+   :mirrors ["src/langgraph/graph.cljk"]
    :url "https://research.google/pubs/pregel-a-system-for-large-scale-graph-processing/"
    :http 200 :verified "2026-08-24"}
 
   {:subject "ReAct: the reason+act loop create-react-agent implements (Yao et al., 2022)"
-   :mirrors ["src/langgraph/prebuilt.cljc"]
+   :mirrors ["src/langgraph/prebuilt.cljk"]
    :url "https://arxiv.org/abs/2210.03629"
    :http 200 :verified "2026-08-24"}
 
   {:subject "Mermaid flowchart syntax, the target of graph->mermaid"
-   :mirrors ["src/langgraph/viz.cljc"]
+   :mirrors ["src/langgraph/viz.cljk"]
    :url "https://mermaid.js.org/syntax/flowchart.html"
    :http 200 :verified "2026-08-24"}
 
   {:subject "Datomic client API — the function-map contract datomic-checkpointer writes through"
-   :mirrors ["src/langgraph/checkpoint.cljc"]
+   :mirrors ["src/langgraph/checkpoint.cljk"]
    :url "https://docs.datomic.com/client-api/datomic.client.api.html"
    :http 200 :verified "2026-08-24"}
 
   {:subject "DataScript — the in-memory db that drops into the same langchain.db/api map"
-   :mirrors ["src/langgraph/checkpoint.cljc"]
+   :mirrors ["src/langgraph/checkpoint.cljk"]
    :url "https://github.com/tonsky/datascript"
    :http 200 :verified "2026-08-24"}
 
@@ -102,11 +102,11 @@
    :http 200 :verified "2026-08-24"}
 
   {:subject "Claude Messages API — the wire shape agent-loop's turn reducer is neutral over"
-   :mirrors ["src/langgraph/agent_loop.cljc"]
+   :mirrors ["src/langgraph/agent_loop.cljk"]
    :url "https://platform.claude.com/docs/en/api/messages"
    :http 200 :verified "2026-08-24"}
 
   {:subject "tool use: the model->tool_use->tool_result turn cycle agent-loop reduces"
-   :mirrors ["src/langgraph/agent_loop.cljc"]
+   :mirrors ["src/langgraph/agent_loop.cljk"]
    :url "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview"
    :http 200 :verified "2026-08-24"}]}
