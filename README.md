@@ -14,6 +14,8 @@ it is itself zero-dep.
 ```
 src/langgraph/
   graph.cljc       StateGraph + Pregel superstep loop + interrupts
+  core.kotoba      the same superstep loop as a Kotoba template module,
+                   compiled by amu to a native binary (see below)
   checkpoint.cljc  checkpointers (in-memory / Datomic) — resume & time travel
   prebuilt.cljc    create-react-agent
   agent_loop.cljc  provider-neutral model -> tools -> results turn reducer
@@ -100,6 +102,62 @@ Checkpoints are plain datoms, so execution history is queryable:
                [?c :checkpoint/step ?step]]
       (db/db conn))
 ```
+
+## Kotoba core — compiled to a native binary
+
+`src/langgraph/core.kotoba` is `langgraph.graph`'s superstep loop written
+in Kotoba as a **template module over the application's state record**:
+`(ns langgraph.core (:params [state]))`. An application binds the state
+type and supplies its nodes as closures; amu compiles the closed graph to
+`aarch64-macos` / `x86_64-linux` (and wasm32 / js / the KIR interpreter —
+the same source, every target):
+
+```clojure
+(ns my.app
+  (:require [langgraph.core :as lg :with {state [:record :my.app/S [[:count :i64]]]}])
+  (:export [main]))
+(defrecord S [count :i64])
+(defn- bump [id :i64 step :i64 s [:record :my.app/S [[:count :i64]]]] [:record :my.app/S [[:count :i64]]]
+  (->S (+ (:count s) 1)))
+(defn main [] :i64
+  (let [g (lg/graph (lg/pack-conj (lg/pack-empty) 0) 25 0 0 1)   ; entry [0], limit 25, no interrupts, 1 node
+        ck (lg/run g (vector-new) (fn [id step s] (bump id step s)) (fn [id s] (lg/pack-conj (lg/pack-empty) (lg/end-id))) (lg/start g (->S 0)))]
+    (:count (lg/ck-st ck))))
+```
+
+```sh
+amu compile my/app.kotoba --jvm-free --source-path src --target aarch64-macos --output app.kexe
+amu extract-native app.kexe --symbol main --output main.bin   # then tools/kexe_loader
+```
+
+What is the same as `langgraph.graph`: static and conditional edges,
+fan-out in insertion order with a distinct frontier, the recursion
+limit, `interrupt-before` / `interrupt-after`, resume, `update-state!`
+(`with-state`), running a finished thread again. What is data instead of a
+protocol: the checkpoint (`Ckpt {st step frontier status}`) is a value in
+and out — persistence, `list-checkpoints`, time travel are the host's,
+exactly as the checkpointer stores here are host adapters. What is a
+`:status` instead of a throw: `:recursion-limit`, `:unknown-node`,
+`:no-entry`, and `:frontier-overflow` (more than 8 successors in one
+superstep — the ceiling the native target's word-only records impose today,
+named in the module header with the rest of them).
+
+Parity is measured, not claimed: the nine scenarios in
+`test/langgraph/kotoba/scenarios.kotoba` fold their final checkpoint into
+one i64 each; `test/langgraph/core_parity_test.cljk` runs the same nine
+through `langgraph.graph` and must reach the same numbers
+(`test/langgraph/kotoba/expected.edn`); `scripts/verify-kotoba-core.cljk`
+runs the guest on the interpreter, wasm32 and js (`amu test --source-path
+src`) and **executes** each scenario as a native binary through amu's kexe
+loader:
+
+```sh
+kbb --backend sci scripts/verify-kotoba-core.cljk     # AMU=<path to amu/bin/amu> if amu is not the west sibling
+```
+
+It needs amu at ADR 0350 or later (amu #996: `amu test --source-path`, closures
+in read-back artifacts, and the kotoba-sema / kotoba-script pins that port
+measured its way to).
 
 ## Mapping from upstream
 

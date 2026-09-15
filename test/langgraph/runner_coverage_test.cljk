@@ -46,7 +46,11 @@
 (defn- test-files []
   (->> #?(:clj (.list (java.io.File. test-dir))
           :cljs (js->clj (fs/readdirSync test-dir)))
-       (filter #(str/ends-with? % "_test.cljc"))
+       ;; `.cljk` since the kbb cutover (d6fa24d); until 2026-09-16 this
+       ;; still read `_test.cljc`, found nothing, and the three assertions
+       ;; below were red on main -- the evidence floor (10 files) is what
+       ;; said so, as designed.
+       (filter #(str/ends-with? % "_test.cljk"))
        sort))
 
 (defn- file->ns [f]

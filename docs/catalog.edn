@@ -27,7 +27,7 @@
    :http 200 :verified "2026-08-24"}
 
   {:subject "StateGraph low-level concepts: channels, reducers, START/END, conditional edges"
-   :mirrors ["src/langgraph/graph.cljk"]
+   :mirrors ["src/langgraph/graph.cljk" "src/langgraph/core.kotoba"]
    :url "https://langchain-ai.github.io/langgraph/concepts/low_level/"
    :http 200 :verified "2026-08-24"}
 
