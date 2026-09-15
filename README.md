@@ -147,16 +147,17 @@ Parity is measured, not claimed: the nine scenarios in
 one i64 each; `test/langgraph/core_parity_test.cljk` runs the same nine
 through `langgraph.graph` and must reach the same numbers
 (`test/langgraph/kotoba/expected.edn`); `scripts/verify-kotoba-core.cljk`
-runs the guest on the interpreter and wasm32 (`amu test --source-path src`)
-and **executes** each scenario as a native binary through amu's kexe loader:
+runs the guest on the interpreter, wasm32 and js (`amu test --source-path
+src`) and **executes** each scenario as a native binary through amu's kexe
+loader:
 
 ```sh
 kbb --backend sci scripts/verify-kotoba-core.cljk     # AMU=<path to amu/bin/amu> if amu is not the west sibling
 ```
 
-The restricted-ESM (`js`) target is reported by that script, not required:
-a linked module's typed-parameter closure dispatcher is asserted as an i64
-word by kotoba-script (measured 2026-09-16), a target gap named there.
+It needs amu at ADR 0350 or later (amu #996: `amu test --source-path`, closures
+in read-back artifacts, and the kotoba-sema / kotoba-script pins that port
+measured its way to).
 
 ## Mapping from upstream
 
