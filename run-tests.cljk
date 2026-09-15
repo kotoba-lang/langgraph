@@ -39,6 +39,10 @@
             [langgraph.agent-test]
             [langgraph.catalog-test]
             [langgraph.checkpoint-test]
+            ;; the oracle half of the Kotoba core parity: nine scenarios
+            ;; through the StateGraph oracle must fold to the codes the
+            ;; guest's test-sN pin (test/langgraph/kotoba/expected.edn)
+            [langgraph.core-parity-test]
             [langgraph.graph-test]
             [langgraph.kotoba-checkpoint-test]
             [langgraph.operator-quickstart-test]
@@ -58,6 +62,7 @@
              'langgraph.agent-test
              'langgraph.catalog-test
              'langgraph.checkpoint-test
+             'langgraph.core-parity-test
              'langgraph.graph-test
              'langgraph.kotoba-checkpoint-test
              'langgraph.operator-quickstart-test
