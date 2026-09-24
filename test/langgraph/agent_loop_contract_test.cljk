@@ -23,7 +23,7 @@
   reason where there is one (a host dispatches on it), and is registered
   in the superproject's `scripts/maturity-loop/mutations.edn` against the
   exact mutation that it — and only it — turns red."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [langgraph.agent-loop :as loop]))
 
 ;; ── fixture ──────────────────────────────────────────────────────────

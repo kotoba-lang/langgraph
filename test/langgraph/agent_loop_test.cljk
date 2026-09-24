@@ -1,5 +1,5 @@
 (ns langgraph.agent-loop-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [langgraph.agent-loop :as loop]))
 
 (deftest codex-grok-compatible-turn-loop

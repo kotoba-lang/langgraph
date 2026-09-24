@@ -1,5 +1,5 @@
 (ns langgraph.graph-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [langgraph.graph :as g]
             [langgraph.checkpoint :as cp]
             [langchain.db :as db]))

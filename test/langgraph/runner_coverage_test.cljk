@@ -23,7 +23,7 @@
   It runs on both runtimes and reads relative to the repo root, which is
   where `kbb -M:test` and the fleet's `npx nbb … run-tests.cljk` are
   both invoked."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.lang.text :as str]
             #?(:cljs ["fs" :as fs])))
 

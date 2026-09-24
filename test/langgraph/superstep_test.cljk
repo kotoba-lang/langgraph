@@ -6,7 +6,7 @@
   That is deliberate: an assertion whose failure reads as \"a number
   changed\" gets deleted by the next person in a hurry, and then the
   behaviour it guarded goes with it."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [langgraph.graph :as g]
             [langgraph.checkpoint :as cp]))
 
