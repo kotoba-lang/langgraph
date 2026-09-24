@@ -14,7 +14,7 @@
   and a thread id, and a thrown scenario reads step and frontier from it."
   (:require #?(:clj [kotoba.test :refer [deftest is testing]]
                :cljs [cljs.test :refer [deftest is testing] :include-macros true])
-            #?(:clj [clojure.edn :as edn] :cljs [cljs.reader :as edn])
+            #?(:clj [kotoba.lang.edn :as edn] :cljs [cljs.reader :as edn])
             [langgraph.graph :as g]
             [langgraph.checkpoint :as cp]))
 

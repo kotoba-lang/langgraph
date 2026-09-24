@@ -6,7 +6,7 @@
   execution history becomes a queryable fact log (ADR-0010 L1 layer:
   facts as EAV, views as named Datalog queries). Time travel falls out
   of the data model: each step is an entity, `get-state-at` is a query."
-  (:require #?(:clj [clojure.edn :as edn]
+  (:require #?(:clj [kotoba.lang.edn :as edn]
                :cljs [cljs.reader :as edn])
             [langchain.db :as db]))
 

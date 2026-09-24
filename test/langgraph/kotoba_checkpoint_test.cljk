@@ -2,7 +2,7 @@
   "Integration-style tests for kotoba-backed checkpointer using a scripted
   mock http-fn (no running kotoba-server required)."
   (:require [kotoba.test :refer [deftest is testing]]
-            #?(:clj  [clojure.edn :as edn]
+            #?(:clj  [kotoba.lang.edn :as edn]
                :cljs [cljs.reader :as edn])
             [kotoba.lang.text :as str]
             [langchain.db                :as db]
