@@ -26,7 +26,7 @@
             ["node:os" :as os]
             ["node:path" :as path]
             ["node:child_process" :as cp]
-            [clojure.edn :as edn]
+            [kotoba.lang.edn :as edn]
             [clojure.string :as str]
             [nbb.core :refer [*file*]]))
 

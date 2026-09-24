@@ -1,6 +1,6 @@
 (ns langgraph.kg-checkpoint-test
   (:require [kotoba.test :refer [deftest is testing]]
-            #?(:clj  [clojure.edn :as edn]
+            #?(:clj  [kotoba.lang.edn :as edn]
                :cljs [cljs.reader :as edn])
             [kotoba.lang.text :as str]
             [langchain.kotoba-db    :as kdb]

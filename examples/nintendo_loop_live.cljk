@@ -28,7 +28,7 @@
             [clojure.java.shell :as sh]
             [kotoba.lang.text :as str]
             [clojure.set :as set]
-            [clojure.edn :as edn]))
+            [kotoba.lang.edn :as edn]))
 
 (def REPO  (or (System/getenv "ISEKAI_REPO")
                "/Users/junkawasaki/github/com-junkawasaki/orgs/gftdcojp/network-isekai"))
