@@ -50,7 +50,7 @@
 
 (comment
   ;; Real Anthropic model on the JVM — inject http + json:
-  (require '[clojure.data.json :as json]) ; or cheshire
+  (require '[kotoba.json :as json]) ; or cheshire
   (import '[java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers]
           '[java.net URI])
 
