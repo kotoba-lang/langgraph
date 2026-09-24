@@ -27,7 +27,7 @@
   against EVERY checkpointer this namespace ships, from one body. A new
   implementation is added to `checkpointers` and inherits the contract
   rather than being trusted with it."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [langgraph.checkpoint :as cp]
             [langchain.db :as db]))
 

@@ -1,5 +1,5 @@
 (ns langgraph.agent-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [langgraph.prebuilt :as prebuilt]
             [langchain.model :as model]
             [langchain.message :as msg]

@@ -12,7 +12,7 @@
   `:running` one written before the superstep) -- or the entry, when
   nothing was saved yet. So every scenario runs with a `mem-checkpointer`
   and a thread id, and a thrown scenario reads step and frontier from it."
-  (:require #?(:clj [clojure.test :refer [deftest is testing]]
+  (:require #?(:clj [kotoba.test :refer [deftest is testing]]
                :cljs [cljs.test :refer [deftest is testing] :include-macros true])
             #?(:clj [clojure.edn :as edn] :cljs [cljs.reader :as edn])
             [langgraph.graph :as g]

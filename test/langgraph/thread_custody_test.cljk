@@ -6,7 +6,7 @@
   A failure here does not read as a wrong number. It reads as one
   caller resuming into another caller's state, or as an approval whose
   audit trail no longer contains what was approved."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [langgraph.graph :as g]
             [langgraph.checkpoint :as cp]
             [langchain.db :as db]))

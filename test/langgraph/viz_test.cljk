@@ -8,7 +8,7 @@
   human-readable label keeps the name the graph actually uses; getting
   that backwards produces a diagram that either fails to render or
   renders under names nobody can grep for."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.lang.text :as str]
             [langgraph.graph :as g]
             [langgraph.viz :as viz]))
