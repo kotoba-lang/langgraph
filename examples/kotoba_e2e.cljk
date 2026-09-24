@@ -28,7 +28,7 @@
             [langgraph.kg-checkpoint     :as kgcp]
             [langgraph.checkpoint        :as cp]
             [langgraph.graph             :as lg]
-            [clojure.data.json           :as json])
+            [kotoba.json           :as json])
   (:import [java.net URI]
            [java.net.http HttpClient HttpRequest HttpRequest$BodyPublishers
             HttpResponse$BodyHandlers]))

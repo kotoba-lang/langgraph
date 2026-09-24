@@ -27,7 +27,7 @@
             [langchain.db :as db]
             [clojure.java.shell :as sh]
             [kotoba.lang.text :as str]
-            [clojure.set :as set]
+            [kotoba.lang.coll :as set]
             [kotoba.lang.edn :as edn]))
 
 (def REPO  (or (System/getenv "ISEKAI_REPO")
