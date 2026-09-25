@@ -97,7 +97,7 @@
                  (g/add-edge :loop :loop)
                  (g/compile-graph {:recursion-limit 5}))
           e (try (g/run* cg {} {}) nil
-                 (catch #?(:clj clojure.lang.ExceptionInfo :cljs js/Error) e e))]
+                 (catch js/Error e e))]
       (is (some? e) "must throw, not return")
       (is (= "Recursion limit reached" (ex-message e)))
       (is (= [:frontier :limit :state] (vec (sort (keys (ex-data e)))))

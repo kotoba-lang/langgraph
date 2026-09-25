@@ -16,7 +16,7 @@
   Like runner-coverage-test it runs on both runtimes and reads relative
   to the repo root, where `kbb -M:test` and the fleet's
   `npx nbb … run-tests.cljk` are both invoked."
-  (:require [kotoba.test :refer [deftest is testing]]
+  (:require [kotoba.io :as kio] [kotoba.test :refer [deftest is testing]]
             [kotoba.lang.text :as str]
             #?(:clj [kotoba.lang.edn :as edn]
                :cljs [cljs.reader :as edn])
@@ -29,7 +29,7 @@
      :cljs (.readFileSync fs p "utf8")))
 
 (defn- file-exists? [p]
-  #?(:clj (.exists (java.io.File. ^String p))
+  #?(:clj (kio/exists? (kio/file ^String p))
      :cljs (fs/existsSync p)))
 
 (defn- catalog [] (edn/read-string (read-text catalog-path)))

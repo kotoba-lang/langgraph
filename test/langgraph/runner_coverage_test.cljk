@@ -23,7 +23,7 @@
   It runs on both runtimes and reads relative to the repo root, which is
   where `kbb -M:test` and the fleet's `npx nbb … run-tests.cljk` are
   both invoked."
-  (:require [kotoba.test :refer [deftest is testing]]
+  (:require [kotoba.io :as kio] [kotoba.test :refer [deftest is testing]]
             [kotoba.lang.text :as str]
             #?(:cljs ["fs" :as fs])))
 
@@ -44,7 +44,7 @@
      :cljs (.readFileSync fs p "utf8")))
 
 (defn- test-files []
-  (->> #?(:clj (.list (java.io.File. test-dir))
+  (->> #?(:clj (kio/list-names (kio/file test-dir))
           :cljs (js->clj (fs/readdirSync test-dir)))
        ;; `.cljk` since the kbb cutover (d6fa24d); until 2026-09-16 this
        ;; still read `_test.cljc`, found nothing, and the three assertions
