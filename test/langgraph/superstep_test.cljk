@@ -168,7 +168,7 @@
                  (g/add-node :a (fn [_] (reset! ran true) {:log [:a]}))
                  (g/compile-graph))
           e (try (g/run* cg {} {}) nil
-                 (catch #?(:clj clojure.lang.ExceptionInfo :cljs js/Error) e e))]
+                 (catch js/Error e e))]
       (is (some? e) "must throw rather than report a vacuous :done")
       (is (= "No entry point — call set-entry-point" (ex-message e)))
       (is (false? @ran) "and no node ran"))))
@@ -185,7 +185,7 @@
                  (g/add-edge :a :typoo)
                  (g/compile-graph))
           e (try (g/run* cg {} {}) nil
-                 (catch #?(:clj clojure.lang.ExceptionInfo :cljs js/Error) e e))]
+                 (catch js/Error e e))]
       (is (some? e))
       (is (= "Unknown node" (ex-message e)))
       (is (= :typoo (:node (ex-data e))) "…and it names which one"))))

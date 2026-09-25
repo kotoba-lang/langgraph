@@ -12,7 +12,7 @@
   `:running` one written before the superstep) -- or the entry, when
   nothing was saved yet. So every scenario runs with a `mem-checkpointer`
   and a thread id, and a thrown scenario reads step and frontier from it."
-  (:require #?(:clj [kotoba.test :refer [deftest is testing]]
+  (:require [kotoba.lang.error :as kerror] #?(:clj [kotoba.test :refer [deftest is testing]]
                :cljs [cljs.test :refer [deftest is testing] :include-macros true])
             #?(:clj [kotoba.lang.edn :as edn] :cljs [cljs.reader :as edn])
             [langgraph.graph :as g]
@@ -69,7 +69,7 @@
   (try (let [r (g/run* cg input {:thread-id tid})
              latest (cp/get-latest (get-in cg [:opts :checkpointer]) tid)]
          (assoc r :step (:step latest)))
-       (catch #?(:clj clojure.lang.ExceptionInfo :cljs ExceptionInfo) e
+       (catch kerror/ExceptionInfo e
          (let [latest (cp/get-latest (get-in cg [:opts :checkpointer]) tid)
                data (ex-data e)
                message (ex-message e)]
